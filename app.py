@@ -21,7 +21,7 @@ def format_sheets():
     client = gspread.authorize(creds)
 
     # Open the Google Spreadsheet using its name
-    spreadsheet = client.open('Your Spreadsheet Name')  # Update with your Spreadsheet Name
+    spreadsheet = client.open('twitch_data')  # Update with your Spreadsheet Name
 
     # Fetch all worksheets
     worksheets = spreadsheet.worksheets()
