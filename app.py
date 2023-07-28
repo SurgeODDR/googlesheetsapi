@@ -134,6 +134,7 @@ def create_pivot_table():
                 }
             }]
         }
+        service = build('sheets', 'v4', credentials=credentials)
         service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet.id, body=request).execute()
 
         logging.info("Created pivot table.")
