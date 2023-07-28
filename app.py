@@ -62,7 +62,7 @@ def format_sheets():
                                         }
                                     },
                                     "condition": {
-                                        "type": "NUMBER_GREATER",
+                                        "type": "TEXT_CONTAINS",
                                         "values": [
                                             {
                                                 "userEnteredValue": "1000"
