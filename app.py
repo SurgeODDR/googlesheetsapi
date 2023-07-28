@@ -1,6 +1,6 @@
 import logging
 import sys
-from flask import Flask, jsonify, current_app as app
+from flask import Flask, jsonify
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from azure.identity import DefaultAzureCredential
@@ -79,6 +79,64 @@ def format_sheets():
             service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet.id, body=request).execute()
 
             logging.info(f"Formatted worksheet: {worksheet.title}")
+
+        return jsonify(success=True)
+
+    except Exception as e:
+        logging.exception(e)
+        return jsonify(error=str(e)), 500
+
+@app.route('/create_pivot_table', methods=['GET'])
+def create_pivot_table():
+    try:
+        logging.info("Fetching the Google service account credentials from Azure Key Vault...")
+        vault_url = "https://keyvaultxscrapingoddr.vault.azure.net/"
+        credential = DefaultAzureCredential()
+        secret_client = SecretClient(vault_url=vault_url, credential=credential)
+        secret_name = "YT-Scraper-web-googleservicekey"
+        credentials_json_str = secret_client.get_secret(secret_name).value
+
+        logging.info(f"Fetched credentials: {credentials_json_str}")
+        credentials_dict = json.loads(credentials_json_str)
+
+        logging.info("Setting up Google Sheets API client...")
+        scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
+        client = gspread.authorize(credentials)
+
+        logging.info("Opening the spreadsheet...")
+        spreadsheet = client.open("twitch_data")
+        worksheet = spreadsheet.worksheet('geographies')  # the worksheet with your data
+
+        logging.info("Creating pivot table...")
+        pivot_table_spec = {
+            "source": {
+                "sheetId": worksheet.id,
+                "startRowIndex": 0,
+                "endRowIndex": worksheet.row_count,
+                "startColumnIndex": 0,
+                "endColumnIndex": 3
+            },
+            "rows": [{"sourceColumnOffset": 0, "showTotals": True, "sortOrder": "ASCENDING"}],
+            "columns": [{"sourceColumnOffset": 1, "showTotals": True, "sortOrder": "ASCENDING"}],
+            "values": [{"summarizeFunction": "SUM", "sourceColumnOffset": 2}]
+        }
+        destination_range = {
+            "sheetId": worksheet.id,
+            "startRowIndex": 0,
+            "startColumnIndex": 4
+        }
+        request = {
+            "requests": [{
+                "createPivotTable": {
+                    "pivotTable": pivot_table_spec,
+                    "destination": destination_range
+                }
+            }]
+        }
+        service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet.id, body=request).execute()
+
+        logging.info("Created pivot table.")
 
         return jsonify(success=True)
 
