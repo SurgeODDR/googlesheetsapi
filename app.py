@@ -44,23 +44,34 @@ def format_sheets():
             request = {
                 "requests": [
                     {
-                        "repeatCell": {
-                            "range": {
-                                "sheetId": worksheet.id,
-                                "startRowIndex": 1,
-                                "endRowIndex": worksheet.row_count,
-                                "startColumnIndex": 2,
-                                "endColumnIndex": worksheet.col_count
-                            },
-                            "cell": {
-                                "userEnteredFormat": {
-                                    "numberFormat": {
-                                        "type": "NUMBER",
-                                        "pattern": "#,##0"
+                        "addConditionalFormatRule": {
+                            "rule": {
+                                "ranges": [{
+                                    "sheetId": worksheet.id,
+                                    "startRowIndex": 1,
+                                    "endRowIndex": worksheet.row_count,
+                                    "startColumnIndex": 1,
+                                    "endColumnIndex": worksheet.col_count
+                                }],
+                                "booleanRule": {
+                                    "format": {
+                                        "backgroundColor": {
+                                            "red": 0.4,
+                                            "green": 0.8,
+                                            "blue": 0.4
+                                        }
+                                    },
+                                    "condition": {
+                                        "type": "NUMBER_GREATER",
+                                        "values": [
+                                            {
+                                                "userEnteredValue": "1000"
+                                            }
+                                        ]
                                     }
                                 }
                             },
-                            "fields": "userEnteredFormat.numberFormat"
+                            "index": 0
                         }
                     }
                 ]
