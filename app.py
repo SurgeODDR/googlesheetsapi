@@ -1,3 +1,5 @@
+from googleapiclient.discovery import build
+
 # Configure root logging to print at the INFO level or higher to stdout
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -24,19 +26,43 @@ def format_sheets():
         logging.info("Opening the spreadsheet...")
         spreadsheet = client.open("twitch_data")
 
+        # Create a Sheets API service
+        service = build('sheets', 'v4', credentials=credentials)
+
         logging.info("Formatting all sheets...")
         for worksheet in spreadsheet.worksheets():
             logging.info(f"Processing worksheet: {worksheet.title}")
-            cell_list = worksheet.range('A1:Z1000')
-            for cell in cell_list:
-                cell.background = "#FF0000"  # Red background color
-                cell.textFormat = {'foregroundColor': {'red': 1, 'green': 1, 'blue': 1},  # White font color
-                                   'fontSize': 12,  # Font size
-                                   'bold': True,  # Bold text
-                                   'italic': False}  # Non-italic text
-                cell.horizontalAlignment = "CENTER"  # Center-aligned text
-            worksheet.update_cells(cell_list, "USER_ENTERED")
-            logging.info(f"Updated {len(cell_list)} cells in worksheet: {worksheet.title}")
+
+            # Add logic here to apply different formatting depending on the worksheet title
+            if worksheet.title == "twitch":
+                # Example: apply number formatting to follower and view counts in the "twitch" sheet
+                request = {
+                    "requests": [
+                        {
+                            "repeatCell": {
+                                "range": {
+                                    "sheetId": worksheet.id,
+                                    "startRowIndex": 1,
+                                    "endRowIndex": 1000,
+                                    "startColumnIndex": 2,
+                                    "endColumnIndex": 4
+                                },
+                                "cell": {
+                                    "userEnteredFormat": {
+                                        "numberFormat": {
+                                            "type": "NUMBER",
+                                            "pattern": "#,##0"
+                                        }
+                                    }
+                                },
+                                "fields": "userEnteredFormat.numberFormat"
+                            }
+                        }
+                    ]
+                }
+                service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet.id, body=request).execute()
+
+                logging.info(f"Formatted worksheet: {worksheet.title}")
 
         return jsonify(success=True)
 
