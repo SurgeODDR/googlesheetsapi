@@ -1,0 +1,12 @@
+Flask
+requests-oauthlib
+azure-identity
+azure-keyvault-secrets
+Jinja2
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+httplib2
+apscheduler
+gspread
