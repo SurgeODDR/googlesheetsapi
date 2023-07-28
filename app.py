@@ -1,12 +1,3 @@
-import logging
-import sys
-from flask import Flask, jsonify, current_app as app
-from oauth2client.service_account import ServiceAccountCredentials
-import gspread
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
-import json
-
 # Configure root logging to print at the INFO level or higher to stdout
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -38,8 +29,13 @@ def format_sheets():
             logging.info(f"Processing worksheet: {worksheet.title}")
             cell_list = worksheet.range('A1:Z1000')
             for cell in cell_list:
-                cell.background = "#00FF00"
-            worksheet.update_cells(cell_list)
+                cell.background = "#FF0000"  # Red background color
+                cell.textFormat = {'foregroundColor': {'red': 1, 'green': 1, 'blue': 1},  # White font color
+                                   'fontSize': 12,  # Font size
+                                   'bold': True,  # Bold text
+                                   'italic': False}  # Non-italic text
+                cell.horizontalAlignment = "CENTER"  # Center-aligned text
+            worksheet.update_cells(cell_list, "USER_ENTERED")
             logging.info(f"Updated {len(cell_list)} cells in worksheet: {worksheet.title}")
 
         return jsonify(success=True)
