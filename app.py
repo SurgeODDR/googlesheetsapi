@@ -38,10 +38,12 @@ def format_sheets():
 
         # Format all sheets
         for worksheet in spreadsheet.worksheets():
+            app.logger.info(f"Processing worksheet: {worksheet.title}")  # log the worksheet title
             cell_list = worksheet.range('A1:Z1000')  # Adjust the range if you expect more data
             for cell in cell_list:
                 cell.background = "#00FF00"  # lime green
             worksheet.update_cells(cell_list)
+            app.logger.info(f"Updated {len(cell_list)} cells in worksheet: {worksheet.title}")  # log the number of updated cells
 
         return jsonify(success=True)
 
