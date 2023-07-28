@@ -41,36 +41,33 @@ def format_sheets():
         for worksheet in spreadsheet.worksheets():
             logging.info(f"Processing worksheet: {worksheet.title}")
 
-            # Add logic here to apply different formatting depending on the worksheet title
-            if worksheet.title == "twitch":
-                # Example: apply number formatting to follower and view counts in the "twitch" sheet
-                request = {
-                    "requests": [
-                        {
-                            "repeatCell": {
-                                "range": {
-                                    "sheetId": worksheet.id,
-                                    "startRowIndex": 1,
-                                    "endRowIndex": 1000,
-                                    "startColumnIndex": 2,
-                                    "endColumnIndex": 4
-                                },
-                                "cell": {
-                                    "userEnteredFormat": {
-                                        "numberFormat": {
-                                            "type": "NUMBER",
-                                            "pattern": "#,##0"
-                                        }
+            request = {
+                "requests": [
+                    {
+                        "repeatCell": {
+                            "range": {
+                                "sheetId": worksheet.id,
+                                "startRowIndex": 1,
+                                "endRowIndex": worksheet.row_count,
+                                "startColumnIndex": 2,
+                                "endColumnIndex": worksheet.col_count
+                            },
+                            "cell": {
+                                "userEnteredFormat": {
+                                    "numberFormat": {
+                                        "type": "NUMBER",
+                                        "pattern": "#,##0"
                                     }
-                                },
-                                "fields": "userEnteredFormat.numberFormat"
-                            }
+                                }
+                            },
+                            "fields": "userEnteredFormat.numberFormat"
                         }
-                    ]
-                }
-                service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet.id, body=request).execute()
+                    }
+                ]
+            }
+            service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet.id, body=request).execute()
 
-                logging.info(f"Formatted worksheet: {worksheet.title}")
+            logging.info(f"Formatted worksheet: {worksheet.title}")
 
         return jsonify(success=True)
 
