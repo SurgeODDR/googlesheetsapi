@@ -1,3 +1,11 @@
+import logging
+import sys
+from flask import Flask, jsonify, current_app as app
+from oauth2client.service_account import ServiceAccountCredentials
+import gspread
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+import json
 from googleapiclient.discovery import build
 
 # Configure root logging to print at the INFO level or higher to stdout
