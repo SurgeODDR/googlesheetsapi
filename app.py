@@ -5,18 +5,21 @@ import gspread
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 import json  # add this line
+import sys  # add this line for stdout logging
 
 # Set up Flask
 app = Flask(__name__)
 
-# Set up logging
-handler = logging.FileHandler('app.log')  # log to a file
+# Set up logging to stdout
+handler = logging.StreamHandler(sys.stdout)  # log to stdout
 handler.setLevel(logging.INFO)  # log INFO level and above
 app.logger.addHandler(handler)  # attach the handler to the app's logger
 
 @app.route('/format_sheets', methods=['GET'])
 def format_sheets():
     try:
+        app.logger.info("Fetching the Google service account credentials from Azure Key Vault...")
+
         # Fetch the Google service account credentials from Azure Key Vault
         vault_url = "https://keyvaultxscrapingoddr.vault.azure.net/"
         credential = DefaultAzureCredential()
@@ -24,8 +27,12 @@ def format_sheets():
         secret_name = "YT-Scraper-web-googleservicekey"
         credentials_json_str = secret_client.get_secret(secret_name).value
 
+        app.logger.info(f"Fetched credentials: {credentials_json_str}")
+
         # Parse the JSON string into a Python dictionary
         credentials_dict = json.loads(credentials_json_str)
+
+        app.logger.info("Setting up Google Sheets API client...")
 
         # Set up Google Sheets API client
         scope = ['https://spreadsheets.google.com/feeds',
@@ -33,8 +40,12 @@ def format_sheets():
         credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
         client = gspread.authorize(credentials)
 
+        app.logger.info("Opening the spreadsheet...")
+
         # Open the spreadsheet by title
         spreadsheet = client.open("twitch_data")
+
+        app.logger.info("Formatting all sheets...")
 
         # Format all sheets
         for worksheet in spreadsheet.worksheets():
