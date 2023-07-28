@@ -4,6 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+import json  # add this line
 
 # Set up Flask
 app = Flask(__name__)
@@ -21,12 +22,15 @@ def format_sheets():
         credential = DefaultAzureCredential()
         secret_client = SecretClient(vault_url=vault_url, credential=credential)
         secret_name = "YT-Scraper-web-googleservicekey"
-        credentials_json = secret_client.get_secret(secret_name).value
+        credentials_json_str = secret_client.get_secret(secret_name).value
+
+        # Parse the JSON string into a Python dictionary
+        credentials_dict = json.loads(credentials_json_str)
 
         # Set up Google Sheets API client
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
-        credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_json, scope)
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
         client = gspread.authorize(credentials)
 
         # Open the spreadsheet by title
