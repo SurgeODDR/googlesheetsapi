@@ -1,29 +1,31 @@
-import logging
-import sys
 import threading
 import time
 import requests
-from flask import Flask, jsonify
-# ... [Your other imports]
-
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+from flask import Flask
 
 app = Flask(__name__)
 
-# Function to send a GET request every minute
 def send_get_request_periodically():
     while True:
         try:
             response = requests.get('https://gptanalyser2.azurewebsites.net/process')
-            logging.info(f"Sent GET request. Response status: {response.status_code}")
+            app.logger.info(f"Sent GET request. Response status: {response.status_code}")
         except Exception as e:
-            logging.exception("Failed to send GET request")
+            app.logger.error(f"Failed to send GET request. Error: {e}")
         time.sleep(60)
 
-# Run the function in a background thread
-threading.Thread(target=send_get_request_periodically, daemon=True).start()
-
-# ... [Your existing Flask routes and functions]
+@app.route('/')
+def index():
+    app.logger.info("Accessed root endpoint.")
+    return "Server is running."
 
 if __name__ == '__main__':
-    app.run()
+    # Configuring logging for Flask
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    
+    # Start the background thread for sending GET requests
+    threading.Thread(target=send_get_request_periodically, daemon=True).start()
+    
+    # Run the Flask server
+    app.run(threaded=False, use_reloader=False)
